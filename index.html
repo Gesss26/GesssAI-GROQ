@@ -266,6 +266,33 @@
 
         // -------------------- LOGHI SQUADRE DA GITHUB (CON UNDERSCORE) --------------------
         function getTeamLogo(teamName, leagueId) {
+            // PER LE COPPE, DETERMINA LA CARTELLA IN BASE ALLA SQUADRA
+            function getFolderForTeam(team) {
+                // Squadre Serie A
+                const serieA = ['Atalanta', 'Bologna', 'Cagliari', 'Como', 'Empoli', 'Fiorentina', 'Genoa', 'Inter', 'Juventus', 'Lazio', 'Lecce', 'Milan', 'Monza', 'Napoli', 'Parma', 'Roma', 'Torino', 'Udinese', 'Venezia', 'Verona'];
+                // Squadre Premier League
+                const premier = ['Arsenal', 'Aston_Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Chelsea', 'Crystal_Palace', 'Everton', 'Fulham', 'Ipswich', 'Leeds_United', 'Liverpool', 'Manchester_City', 'Manchester_United', 'Newcastle', 'Nottingham', 'Tottenham'];
+                // Squadre Bundesliga
+                const bundesliga = ['Augsburg', 'Bayern', 'Bremen', 'Dortmund', 'Borussia_Mönchengladbach', 'Eintracht_Frankfurt', 'Freiburg', 'Hoffenheim', 'Köln', 'HSV', 'Leipzig', 'Leverkusen', 'Mainz_05', 'Stuttgart', 'Union_Berlin'];
+                // Squadre Ligue 1
+                const ligue1 = ['Angers', 'Auxerre', 'Brest', 'Le_Havre', 'Lens', 'Lille', 'Lione', 'Marsiglia', 'Monaco', 'Nantes', 'Nizza', 'PSG', 'Rennes', 'Strasburgo', 'Tolosa'];
+                // Squadre Liga
+                const liga = ['Alavés', 'Athletic_Bilbao', 'Atlético_Madrid', 'Barcellona', 'Celta_Vigo', 'Espanyol', 'Getafe', 'Osasuna', 'Rayo_Vallecano', 'Real_Betis', 'Real_Madrid', 'Real_Sociedad', 'Sevilla', 'Valencia', 'Villarreal'];
+                // Squadre nordiche
+                const nordici = ['AIK', 'Bodø-Glimt', 'Brann', 'Djurgården', 'Elfsborg', 'HJK', 'Hammarby', 'IFK_Göteborg', 'KuPS', 'Malmö', 'Molde', 'Rosenborg', 'SJK', 'Viking'];
+                // Squadre asiatiche
+                const asia = ['Cerezo_Osaka', 'FC_Seoul', 'Gamba_Osaka', 'Kashima', 'Kawasaki', 'Nagoya', 'Sanfrecce', 'Urawa_Reds', 'Vissel_Kobe', 'Yokohama_FM'];
+                
+                if (serieA.includes(team)) return 'serie_a';
+                if (premier.includes(team)) return 'premier_league';
+                if (bundesliga.includes(team)) return 'bundesliga';
+                if (ligue1.includes(team)) return 'ligue_1';
+                if (liga.includes(team)) return 'liga';
+                if (nordici.includes(team)) return 'nordici';
+                if (asia.includes(team)) return 'asia';
+                return 'serie_a';
+            }
+            
             const leagueFolder = {
                 'serie_a': 'serie_a',
                 'serie_b': 'serie_b',
@@ -276,7 +303,6 @@
                 'bundesliga': 'bundesliga',
                 'ligue_1': 'ligue_1',
                 'liga': 'liga',
-                // PER LE COPPE, USA LA CARTELLA DEL CAMPIONATO DI PROVENIENZA
                 'champions_league': 'serie_a',
                 'europa_league': 'serie_a',
                 'conference_league': 'serie_a',
@@ -290,7 +316,13 @@
                 'csl': 'asia'
             };
             
-            const folder = leagueFolder[leagueId];
+            let folder = leagueFolder[leagueId];
+            
+            // Se è una competizione europea, trova la cartella giusta in base alla squadra
+            if (leagueId === 'champions_league' || leagueId === 'europa_league' || leagueId === 'conference_league') {
+                folder = getFolderForTeam(teamName);
+            }
+            
             if (!folder) return null;
             
             // IL NOME È GIÀ CON UNDERSCORE NEL DATABASE
@@ -808,7 +840,7 @@
                 const homeColors = getTeamColors(home);
                 const awayColors = getTeamColors(away);
                 
-                // LOGHI - il nome è già con underscore
+                // LOGHI - ora funziona per tutte le competizioni!
                 const homeLogo = getTeamLogo(home, selectedLeagueId);
                 const awayLogo = getTeamLogo(away, selectedLeagueId);
 
@@ -988,7 +1020,7 @@
         console.log('🎨 Colori: 🔴 0-33% | ⚪ 33-66% | 🟢 66-89% | 💣 90-100%');
         console.log('📱 Doppio click sulla card per uscire');
         console.log('✅ I loghi delle squadre usano underscore (_) come i tuoi file!');
-        console.log('✅ Per le coppe, i loghi delle squadre vengono presi dalla cartella serie_a');
+        console.log('✅ Per le coppe, i loghi vengono presi dalla cartella giusta in base alla squadra!');
     })();
 </script>
 </body>
