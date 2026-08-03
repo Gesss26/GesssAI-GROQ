@@ -6,6 +6,7 @@
     <title>⚽ Analisi Pro Squadre - GROQ AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
+        /* ... (tutti gli stili come prima, ma senza .team-colors-fallback) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background: #0b1120; color: #e8edf5; padding: 16px; min-height: 100vh; }
         .app { max-width: 480px; margin: 0 auto; background: #0f1828; border-radius: 32px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); min-height: 100vh; position: relative; }
@@ -218,6 +219,49 @@
 
 <script>
     (function(){
+        // -------------------- DATABASE LOGHI (caricato da GitHub) --------------------
+        let logoDatabase = null;
+        let isDatabaseLoaded = false;
+
+        // Carica il database dei loghi da GitHub
+        async function loadLogoDatabase() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/logos.json');
+                if (!response.ok) throw new Error('Errore nel caricamento del database loghi');
+                logoDatabase = await response.json();
+                isDatabaseLoaded = true;
+                console.log('✅ Database loghi caricato con successo!');
+                console.log('📊 Campionati disponibili:', Object.keys(logoDatabase));
+                return true;
+            } catch (error) {
+                console.error('❌ Errore nel caricamento del database loghi:', error);
+                return false;
+            }
+        }
+
+        // Funzione per ottenere il logo dal database
+        function getTeamLogoFromDB(teamName, leagueId) {
+            if (!isDatabaseLoaded || !logoDatabase) {
+                console.warn('⚠️ Database loghi non ancora caricato');
+                return null;
+            }
+            
+            // Se il leagueId non esiste nel database, prova a cercare in tutti
+            if (logoDatabase[leagueId] && logoDatabase[leagueId][teamName]) {
+                return logoDatabase[leagueId][teamName];
+            }
+            
+            // Cerca in tutti i campionati
+            for (const league in logoDatabase) {
+                if (logoDatabase[league][teamName]) {
+                    return logoDatabase[league][teamName];
+                }
+            }
+            
+            console.warn(`⚠️ Logo non trovato per ${teamName} in ${leagueId}`);
+            return null;
+        }
+
         // -------------------- BANDIERE --------------------
         function getFlag(nation) {
             const flags = {
@@ -247,39 +291,7 @@
             return flags[nation] || null;
         }
 
-        // -------------------- LOGHI SQUADRE DA GITHUB --------------------
-        function getTeamLogo(teamName, leagueId) {
-            // MAPPATURA CAMPIONATO -> CARTELLA
-            const leagueFolder = {
-                'serie_a': 'serie_a',
-                'serie_b': 'serie_b',
-                'serie_c_a': 'serie_c_a',
-                'serie_c_b': 'serie_c_b',
-                'serie_c_c': 'serie_c_c',
-                'premier_league': 'premier_league',
-                'bundesliga': 'bundesliga',
-                'ligue_1': 'ligue_1',
-                'liga': 'liga',
-                'allsvenkan': 'nordici',
-                'eliteserien': 'nordici',
-                'veikkausliiga': 'nordici',
-                'danish': 'nordici',
-                'besta_deild': 'nordici',
-                'j1_league': 'asia',
-                'k_league': 'asia',
-                'csl': 'asia'
-            };
-            
-            const folder = leagueFolder[leagueId];
-            if (!folder) return null;
-            
-            // IL NOME È GIÀ CON UNDERSCORE NEL DATABASE
-            const fileName = teamName;
-            
-            return `https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/${folder}/${fileName}.png`;
-        }
-
-        // -------------------- CAMPIONATI (SENZA COPPE) --------------------
+        // -------------------- CAMPIONATI --------------------
         const regions = [
             { name: '🇪🇺 Europa - Top 5', icon: 'fa-star', leagues: [
                 { id: 'premier_league', name: 'Premier League', nation: 'Inghilterra' },
@@ -410,30 +422,64 @@
             });
         }
 
-        // Meteo
-        async function getWeather(lat, lon, city) {
-            try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto&forecast_days=1`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Errore Open-Meteo');
-                const data = await response.json();
-                if (data.current_weather) {
-                    const temp = data.current_weather.temperature;
-                    const code = data.current_weather.weathercode;
-                    let icon = '⛅';
-                    if (code === 0) icon = '☀️';
-                    else if (code === 1 || code === 2) icon = '⛅';
-                    else if (code === 3) icon = '☁️';
-                    else if (code >= 51 && code <= 67) icon = '🌧️';
-                    else if (code >= 71 && code <= 77) icon = '❄️';
-                    else if (code >= 80 && code <= 99) icon = '⛈️';
-                    return { icon, temp: Math.round(temp) + '°C', city: city || 'Città' };
-                }
-                return null;
-            } catch (error) {
-                console.error('Errore meteo:', error);
-                return null;
+        // Funzioni utility
+        function generateFormDots(percentage) {
+            const numV = Math.floor(percentage / 20);
+            const remaining = 5 - numV;
+            const numP = Math.floor(remaining / 2);
+            const numS = remaining - numP;
+            let dots = [];
+            for (let i = 0; i < numV; i++) dots.push('V');
+            for (let i = 0; i < numP; i++) dots.push('P');
+            for (let i = 0; i < numS; i++) dots.push('S');
+            if (dots.length === 5) {
+                if (percentage >= 80) return ['V', 'V', 'V', 'V', 'P'];
+                if (percentage >= 60) return ['V', 'V', 'P', 'V', 'S'];
+                if (percentage >= 40) return ['V', 'P', 'S', 'V', 'P'];
+                if (percentage >= 20) return ['P', 'S', 'P', 'S', 'V'];
+                return ['S', 'S', 'S', 'S', 'P'];
             }
+            return dots;
+        }
+
+        function getPercentageFlag(p) {
+            if (p >= 90) return { class: 'flag-bomb', icon: '💣', label: 'BOMBA!', extra: '<span class="bomb-icon">💣</span>' };
+            if (p >= 66.67) return { class: 'flag-green', icon: '🟢', label: 'Alta' };
+            if (p >= 33.34) return { class: 'flag-neutral', icon: '⚪', label: 'Media' };
+            return { class: 'flag-red', icon: '🔴', label: 'Bassa' };
+        }
+
+        function getTipFlag(p) {
+            if (p >= 90) return { class: 'flag-bomb', icon: '💣', label: 'BOMBA!' };
+            if (p >= 66.67) return { class: 'flag-green', icon: '🟢', label: 'Alta' };
+            if (p >= 33.34) return { class: 'flag-neutral', icon: '⚪', label: 'Media' };
+            return { class: 'flag-red', icon: '🔴', label: 'Bassa' };
+        }
+
+        function generateTeamStats(teamName, formPercentage) {
+            const baseWins = Math.round(formPercentage / 20);
+            const baseDraws = Math.round((100 - formPercentage) / 30);
+            const baseLosses = 5 - baseWins - baseDraws;
+            
+            const wins = Math.max(0, Math.min(5, baseWins + Math.floor(Math.random() * 2) - 1));
+            const draws = Math.max(0, Math.min(5 - wins, baseDraws + Math.floor(Math.random() * 2) - 1));
+            const losses = 5 - wins - draws;
+            
+            const goalsFor = Math.round((formPercentage / 100) * 8 + Math.random() * 3);
+            const goalsAgainst = Math.round((1 - formPercentage / 100) * 8 + Math.random() * 3);
+            const points = wins * 3 + draws;
+            const position = Math.floor(Math.random() * 20) + 1;
+            
+            const goalRanges = { '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5+': 0 };
+            const avgGoals = formPercentage / 100 * 2.5 + 0.5;
+            for (let i = 0; i < 10; i++) {
+                let goals = Math.round(avgGoals + (Math.random() - 0.5) * 2);
+                goals = Math.max(0, goals);
+                if (goals >= 5) goalRanges['5+']++;
+                else goalRanges[goals.toString()] = (goalRanges[goals.toString()] || 0) + 1;
+            }
+            
+            return { wins, draws, losses, goalsFor, goalsAgainst, points, position, goalRanges };
         }
 
         // GROQ
@@ -515,9 +561,9 @@
                 const homeDots = generateFormDots(stats.homeForm);
                 const awayDots = generateFormDots(stats.awayForm);
                 
-                // LOGHI - SOLO LOGHI, NIENTE ALTRO!
-                const homeLogo = getTeamLogo(home, selectedLeagueId);
-                const awayLogo = getTeamLogo(away, selectedLeagueId);
+                // LOGHI - presi dal DATABASE
+                const homeLogoUrl = getTeamLogoFromDB(home, selectedLeagueId);
+                const awayLogoUrl = getTeamLogoFromDB(away, selectedLeagueId);
 
                 const homeStats = generateTeamStats(home, stats.homeForm);
                 const awayStats = generateTeamStats(away, stats.awayForm);
@@ -561,7 +607,7 @@
 
                     <div class="matchup">
                         <div class="team-block">
-                            ${homeLogo ? `<img src="${homeLogo}" class="team-logo" alt="${homeDisplay}" onerror="this.style.display='none';" />` : ''}
+                            ${homeLogoUrl ? `<img src="${homeLogoUrl}" class="team-logo" alt="${homeDisplay}" onerror="this.style.display='none'; console.error('❌ Logo non caricato:', '${homeLogoUrl}');" />` : ''}
                             <div class="team-name team-name-home">${homeDisplay}</div>
                             <div class="form-dots">
                                 ${homeDots.map(d => `<span class="dot ${dotClass[d]}">${dotLabel[d]}</span>`).join('')}
@@ -571,7 +617,7 @@
                             <div class="vs-symbol">🆚</div>
                         </div>
                         <div class="team-block">
-                            ${awayLogo ? `<img src="${awayLogo}" class="team-logo" alt="${awayDisplay}" onerror="this.style.display='none';" />` : ''}
+                            ${awayLogoUrl ? `<img src="${awayLogoUrl}" class="team-logo" alt="${awayDisplay}" onerror="this.style.display='none'; console.error('❌ Logo non caricato:', '${awayLogoUrl}');" />` : ''}
                             <div class="team-name team-name-away">${awayDisplay}</div>
                             <div class="form-dots">
                                 ${awayDots.map(d => `<span class="dot ${dotClass[d]}">${dotLabel[d]}</span>`).join('')}
@@ -672,64 +718,27 @@
             }
         }
 
-        // Funzioni utility (rimaste per compatibilità)
-        function generateFormDots(percentage) {
-            const numV = Math.floor(percentage / 20);
-            const remaining = 5 - numV;
-            const numP = Math.floor(remaining / 2);
-            const numS = remaining - numP;
-            let dots = [];
-            for (let i = 0; i < numV; i++) dots.push('V');
-            for (let i = 0; i < numP; i++) dots.push('P');
-            for (let i = 0; i < numS; i++) dots.push('S');
-            if (dots.length === 5) {
-                if (percentage >= 80) return ['V', 'V', 'V', 'V', 'P'];
-                if (percentage >= 60) return ['V', 'V', 'P', 'V', 'S'];
-                if (percentage >= 40) return ['V', 'P', 'S', 'V', 'P'];
-                if (percentage >= 20) return ['P', 'S', 'P', 'S', 'V'];
-                return ['S', 'S', 'S', 'S', 'P'];
-            }
-            return dots;
-        }
-
-        function getPercentageFlag(p) {
-            if (p >= 90) return { class: 'flag-bomb', icon: '💣', label: 'BOMBA!', extra: '<span class="bomb-icon">💣</span>' };
-            if (p >= 66.67) return { class: 'flag-green', icon: '🟢', label: 'Alta' };
-            if (p >= 33.34) return { class: 'flag-neutral', icon: '⚪', label: 'Media' };
-            return { class: 'flag-red', icon: '🔴', label: 'Bassa' };
-        }
-
-        function getTipFlag(p) {
-            if (p >= 90) return { class: 'flag-bomb', icon: '💣', label: 'BOMBA!' };
-            if (p >= 66.67) return { class: 'flag-green', icon: '🟢', label: 'Alta' };
-            if (p >= 33.34) return { class: 'flag-neutral', icon: '⚪', label: 'Media' };
-            return { class: 'flag-red', icon: '🔴', label: 'Bassa' };
-        }
-
-        function generateTeamStats(teamName, formPercentage) {
-            const baseWins = Math.round(formPercentage / 20);
-            const baseDraws = Math.round((100 - formPercentage) / 30);
-            const baseLosses = 5 - baseWins - baseDraws;
+        // MAIN - Carica il database e poi avvia l'app
+        async function initApp() {
+            // Mostra loading
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Caricamento loghi...</div>';
             
-            const wins = Math.max(0, Math.min(5, baseWins + Math.floor(Math.random() * 2) - 1));
-            const draws = Math.max(0, Math.min(5 - wins, baseDraws + Math.floor(Math.random() * 2) - 1));
-            const losses = 5 - wins - draws;
+            // Carica il database dei loghi
+            const loaded = await loadLogoDatabase();
             
-            const goalsFor = Math.round((formPercentage / 100) * 8 + Math.random() * 3);
-            const goalsAgainst = Math.round((1 - formPercentage / 100) * 8 + Math.random() * 3);
-            const points = wins * 3 + draws;
-            const position = Math.floor(Math.random() * 20) + 1;
-            
-            const goalRanges = { '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5+': 0 };
-            const avgGoals = formPercentage / 100 * 2.5 + 0.5;
-            for (let i = 0; i < 10; i++) {
-                let goals = Math.round(avgGoals + (Math.random() - 0.5) * 2);
-                goals = Math.max(0, goals);
-                if (goals >= 5) goalRanges['5+']++;
-                else goalRanges[goals.toString()] = (goalRanges[goals.toString()] || 0) + 1;
+            if (loaded) {
+                console.log('✅ Database loghi caricato!');
+                renderLeagues();
+                populateTeams(selectedLeagueId);
+            } else {
+                console.warn('⚠️ Database loghi non caricato, uso fallback');
+                renderLeagues();
+                populateTeams(selectedLeagueId);
             }
             
-            return { wins, draws, losses, goalsFor, goalsAgainst, points, position, goalRanges };
+            console.log('⚽ Analyst Pro v5.0 - CON DATABASE LOGHI!');
+            console.log(`📊 ${Object.values(teamsDB).reduce((acc, arr) => acc + arr.length, 0)} squadre totali`);
+            console.log('✅ I loghi vengono dal database logos.json su GitHub!');
         }
 
         confirmBtn.addEventListener('click', function(){
@@ -740,12 +749,8 @@
             performAnalysis(home, away);
         });
 
-        renderLeagues();
-        populateTeams(selectedLeagueId);
-        console.log('⚽ Analyst Pro v5.0 - SOLO LOGHI!');
-        console.log(`📊 ${Object.values(teamsDB).reduce((acc, arr) => acc + arr.length, 0)} squadre totali`);
-        console.log('✅ I loghi delle squadre usano underscore (_) come i tuoi file!');
-        console.log('📁 Cartelle: serie_a, premier_league, bundesliga, ligue_1, liga, nordici, asia');
+        // Avvia l'app
+        initApp();
     })();
 </script>
 </body>
