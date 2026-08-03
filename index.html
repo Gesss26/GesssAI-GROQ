@@ -276,9 +276,10 @@
                 'bundesliga': 'bundesliga',
                 'ligue_1': 'ligue_1',
                 'liga': 'liga',
-                'champions_league': 'Coppe',
-                'europa_league': 'Coppe',
-                'conference_league': 'Coppe',
+                // PER LE COPPE, USA LA CARTELLA DEL CAMPIONATO DI PROVENIENZA
+                'champions_league': 'serie_a',
+                'europa_league': 'serie_a',
+                'conference_league': 'serie_a',
                 'allsvenkan': 'nordici',
                 'eliteserien': 'nordici',
                 'veikkausliiga': 'nordici',
@@ -684,7 +685,6 @@
             homeSelect.innerHTML = '<option value="">— Casa —</option>';
             awaySelect.innerHTML = '<option value="">— Ospiti —</option>';
             teams.sort().forEach(t => {
-                // Mostra con spazi, ma il value è con underscore
                 const displayName = t.replace(/_/g, ' ');
                 homeSelect.innerHTML += `<option value="${t}">${displayName}</option>`;
                 awaySelect.innerHTML += `<option value="${t}">${displayName}</option>`;
@@ -988,6 +988,7 @@
         console.log('🎨 Colori: 🔴 0-33% | ⚪ 33-66% | 🟢 66-89% | 💣 90-100%');
         console.log('📱 Doppio click sulla card per uscire');
         console.log('✅ I loghi delle squadre usano underscore (_) come i tuoi file!');
+        console.log('✅ Per le coppe, i loghi delle squadre vengono presi dalla cartella serie_a');
     })();
 </script>
 </body>
