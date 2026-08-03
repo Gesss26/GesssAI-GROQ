@@ -6,7 +6,6 @@
     <title>⚽ Analisi Pro Squadre - GROQ AI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
-        /* ... (tutti gli stili come prima, ma senza .team-colors-fallback) ... */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background: #0b1120; color: #e8edf5; padding: 16px; min-height: 100vh; }
         .app { max-width: 480px; margin: 0 auto; background: #0f1828; border-radius: 32px; padding: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); min-height: 100vh; position: relative; }
@@ -219,49 +218,6 @@
 
 <script>
     (function(){
-        // -------------------- DATABASE LOGHI (caricato da GitHub) --------------------
-        let logoDatabase = null;
-        let isDatabaseLoaded = false;
-
-        // Carica il database dei loghi da GitHub
-        async function loadLogoDatabase() {
-            try {
-                const response = await fetch('https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/logos.json');
-                if (!response.ok) throw new Error('Errore nel caricamento del database loghi');
-                logoDatabase = await response.json();
-                isDatabaseLoaded = true;
-                console.log('✅ Database loghi caricato con successo!');
-                console.log('📊 Campionati disponibili:', Object.keys(logoDatabase));
-                return true;
-            } catch (error) {
-                console.error('❌ Errore nel caricamento del database loghi:', error);
-                return false;
-            }
-        }
-
-        // Funzione per ottenere il logo dal database
-        function getTeamLogoFromDB(teamName, leagueId) {
-            if (!isDatabaseLoaded || !logoDatabase) {
-                console.warn('⚠️ Database loghi non ancora caricato');
-                return null;
-            }
-            
-            // Se il leagueId non esiste nel database, prova a cercare in tutti
-            if (logoDatabase[leagueId] && logoDatabase[leagueId][teamName]) {
-                return logoDatabase[leagueId][teamName];
-            }
-            
-            // Cerca in tutti i campionati
-            for (const league in logoDatabase) {
-                if (logoDatabase[league][teamName]) {
-                    return logoDatabase[league][teamName];
-                }
-            }
-            
-            console.warn(`⚠️ Logo non trovato per ${teamName} in ${leagueId}`);
-            return null;
-        }
-
         // -------------------- BANDIERE --------------------
         function getFlag(nation) {
             const flags = {
@@ -291,7 +247,89 @@
             return flags[nation] || null;
         }
 
-        // -------------------- CAMPIONATI --------------------
+        // -------------------- COORDINATE PER IL METEO --------------------
+        const teamCities = {
+            'Inter': { lat: 45.4780, lon: 9.1235, city: 'Milano' },
+            'Milan': { lat: 45.4780, lon: 9.1235, city: 'Milano' },
+            'Juventus': { lat: 45.1097, lon: 7.6414, city: 'Torino' },
+            'Roma': { lat: 41.9357, lon: 12.4546, city: 'Roma' },
+            'Napoli': { lat: 40.8518, lon: 14.2681, city: 'Napoli' },
+            'Atalanta': { lat: 45.6983, lon: 9.6780, city: 'Bergamo' },
+            'Fiorentina': { lat: 43.7696, lon: 11.2558, city: 'Firenze' },
+            'Lazio': { lat: 41.9357, lon: 12.4546, city: 'Roma' },
+            'Bologna': { lat: 44.4949, lon: 11.3426, city: 'Bologna' },
+            'Torino': { lat: 45.1097, lon: 7.6414, city: 'Torino' },
+            'Genoa': { lat: 44.4056, lon: 8.9463, city: 'Genova' },
+            'Udinese': { lat: 46.0661, lon: 13.2329, city: 'Udine' },
+            'Verona': { lat: 45.4384, lon: 10.9916, city: 'Verona' },
+            'Cagliari': { lat: 39.2238, lon: 9.1217, city: 'Cagliari' },
+            'Lecce': { lat: 40.3525, lon: 18.1696, city: 'Lecce' },
+            'Empoli': { lat: 43.7176, lon: 10.9484, city: 'Empoli' },
+            'Como': { lat: 45.8080, lon: 9.0852, city: 'Como' },
+            'Monza': { lat: 45.5842, lon: 9.2746, city: 'Monza' },
+            'Parma': { lat: 44.8015, lon: 10.3280, city: 'Parma' },
+            'Venezia': { lat: 45.4408, lon: 12.3155, city: 'Venezia' },
+            'Arsenal': { lat: 51.5560, lon: -0.1056, city: 'Londra' },
+            'Aston_Villa': { lat: 52.5091, lon: -1.8848, city: 'Birmingham' },
+            'Bournemouth': { lat: 50.7354, lon: -1.8386, city: 'Bournemouth' },
+            'Brentford': { lat: 51.4886, lon: -0.3026, city: 'Londra' },
+            'Brighton': { lat: 50.8610, lon: -0.1155, city: 'Brighton' },
+            'Chelsea': { lat: 51.4817, lon: -0.1900, city: 'Londra' },
+            'Crystal_Palace': { lat: 51.3983, lon: -0.0851, city: 'Londra' },
+            'Everton': { lat: 53.4389, lon: -2.9663, city: 'Liverpool' },
+            'Fulham': { lat: 51.4751, lon: -0.2216, city: 'Londra' },
+            'Ipswich': { lat: 52.0559, lon: 1.1459, city: 'Ipswich' },
+            'Leeds_United': { lat: 53.7779, lon: -1.5722, city: 'Leeds' },
+            'Liverpool': { lat: 53.4308, lon: -2.9608, city: 'Liverpool' },
+            'Manchester_City': { lat: 53.4831, lon: -2.2003, city: 'Manchester' },
+            'Manchester_United': { lat: 53.4631, lon: -2.2913, city: 'Manchester' },
+            'Newcastle': { lat: 54.9756, lon: -1.6217, city: 'Newcastle' },
+            'Nottingham': { lat: 52.9400, lon: -1.1324, city: 'Nottingham' },
+            'Tottenham': { lat: 51.6040, lon: -0.0650, city: 'Londra' },
+            'Real_Madrid': { lat: 40.4531, lon: -3.6883, city: 'Madrid' },
+            'Barcellona': { lat: 41.3809, lon: 2.1228, city: 'Barcellona' },
+            'Atletico_Madrid': { lat: 40.4362, lon: -3.5994, city: 'Madrid' },
+            'Bayern': { lat: 48.2188, lon: 11.6247, city: 'Monaco' },
+            'Dortmund': { lat: 51.4926, lon: 7.4520, city: 'Dortmund' },
+            'PSG': { lat: 48.8414, lon: 2.2530, city: 'Parigi' },
+            'Marsiglia': { lat: 43.2696, lon: 5.3958, city: 'Marsiglia' },
+            'Lione': { lat: 45.7640, lon: 4.8357, city: 'Lione' },
+            'AIK': { lat: 59.3628, lon: 18.0000, city: 'Stoccolma' },
+            'Malmö': { lat: 55.6090, lon: 13.0000, city: 'Malmö' },
+            'Bodø-Glimt': { lat: 67.2829, lon: 14.3751, city: 'Bodø' },
+            'Brann': { lat: 60.3913, lon: 5.3221, city: 'Bergen' },
+            'HJK': { lat: 60.1699, lon: 24.9384, city: 'Helsinki' },
+            'FC_København': { lat: 55.6761, lon: 12.5683, city: 'Copenaghen' },
+            'FC_Seoul': { lat: 37.5665, lon: 126.9780, city: 'Seul' },
+            'Cerezo_Osaka': { lat: 34.6937, lon: 135.5023, city: 'Osaka' }
+        };
+
+        function getTeamCoordinates(team) {
+            return teamCities[team] || null;
+        }
+
+        // -------------------- CAPITALI PER FALLBACK METEO --------------------
+        const capitalCities = {
+            'Italia': { lat: 41.9028, lon: 12.4964, city: 'Roma' },
+            'Inghilterra': { lat: 51.5074, lon: -0.1278, city: 'Londra' },
+            'Germania': { lat: 52.5200, lon: 13.4050, city: 'Berlino' },
+            'Francia': { lat: 48.8566, lon: 2.3522, city: 'Parigi' },
+            'Spagna': { lat: 40.4168, lon: -3.7038, city: 'Madrid' },
+            'Svezia': { lat: 59.3293, lon: 18.0686, city: 'Stoccolma' },
+            'Norvegia': { lat: 59.9139, lon: 10.7522, city: 'Oslo' },
+            'Finlandia': { lat: 60.1699, lon: 24.9384, city: 'Helsinki' },
+            'Danimarca': { lat: 55.6761, lon: 12.5683, city: 'Copenaghen' },
+            'Islanda': { lat: 64.1466, lon: -21.9426, city: 'Reykjavík' },
+            'Giappone': { lat: 35.6762, lon: 139.6503, city: 'Tokyo' },
+            'Corea': { lat: 37.5665, lon: 126.9780, city: 'Seul' },
+            'Cina': { lat: 39.9042, lon: 116.4074, city: 'Pechino' }
+        };
+
+        function getCapital(nation) {
+            return capitalCities[nation] || { lat: 45.4642, lon: 9.1900, city: 'Milano' };
+        }
+
+        // -------------------- CAMPIONATI (SENZA COPPE) --------------------
         const regions = [
             { name: '🇪🇺 Europa - Top 5', icon: 'fa-star', leagues: [
                 { id: 'premier_league', name: 'Premier League', nation: 'Inghilterra' },
@@ -340,6 +378,145 @@
             k_league: ['Daejeon', 'FC_Seoul', 'Gangwon', 'Gimcheon', 'Gwangju', 'Incheon_Utd', 'Jeju', 'Jeonbuk', 'Pohang_Steelers', 'Ulsan'],
             csl: ['Chengdu', 'Guoan', 'Henan', 'Jinmen_Tiger', 'Port', 'Shenhua', 'Shenzhen', 'Taishan', 'Three_Towns', 'Zhejiang']
         };
+
+        // -------------------- DATABASE LOGHI (CON URL DIRETTI) --------------------
+        // Questo è il database dei loghi con URL DIRETTI
+        const logoDatabase = {
+            "serie_a": {
+                "Atalanta": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Atalanta.png",
+                "Bologna": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Bologna.png",
+                "Cagliari": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Cagliari.png",
+                "Como": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Como.png",
+                "Empoli": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Empoli.png",
+                "Fiorentina": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Fiorentina.png",
+                "Genoa": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Genoa.png",
+                "Inter": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Inter.png",
+                "Juventus": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Juventus.png",
+                "Lazio": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Lazio.png",
+                "Lecce": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Lecce.png",
+                "Milan": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Milan.png",
+                "Monza": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Monza.png",
+                "Napoli": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Napoli.png",
+                "Parma": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Parma.png",
+                "Roma": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Roma.png",
+                "Torino": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Torino.png",
+                "Udinese": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Udinese.png",
+                "Venezia": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Venezia.png",
+                "Verona": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/serie_a/Verona.png"
+            },
+            "premier_league": {
+                "Arsenal": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Arsenal.png",
+                "Aston_Villa": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Aston_Villa.png",
+                "Bournemouth": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Bournemouth.png",
+                "Brentford": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Brentford.png",
+                "Brighton": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Brighton.png",
+                "Chelsea": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Chelsea.png",
+                "Crystal_Palace": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Crystal_Palace.png",
+                "Everton": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Everton.png",
+                "Fulham": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Fulham.png",
+                "Ipswich": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Ipswich.png",
+                "Leeds_United": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Leeds_United.png",
+                "Liverpool": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Liverpool.png",
+                "Manchester_City": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Manchester_City.png",
+                "Manchester_United": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Manchester_United.png",
+                "Newcastle": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Newcastle.png",
+                "Nottingham": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Nottingham.png",
+                "Tottenham": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/premier_league/Tottenham.png"
+            },
+            "bundesliga": {
+                "Augsburg": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Augsburg.png",
+                "Bayern": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Bayern.png",
+                "Bremen": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Bremen.png",
+                "Dortmund": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Dortmund.png",
+                "Borussia_Mönchengladbach": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Borussia_Mönchengladbach.png",
+                "Eintracht_Frankfurt": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Eintracht_Frankfurt.png",
+                "Freiburg": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Freiburg.png",
+                "Hoffenheim": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Hoffenheim.png",
+                "Köln": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Köln.png",
+                "HSV": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/HSV.png",
+                "Leipzig": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Leipzig.png",
+                "Leverkusen": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Leverkusen.png",
+                "Mainz_05": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Mainz_05.png",
+                "Stuttgart": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Stuttgart.png",
+                "Union_Berlin": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/bundesliga/Union_Berlin.png"
+            },
+            "ligue_1": {
+                "Angers": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Angers.png",
+                "Auxerre": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Auxerre.png",
+                "Brest": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Brest.png",
+                "Le_Havre": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Le_Havre.png",
+                "Lens": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Lens.png",
+                "Lille": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Lille.png",
+                "Lione": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Lione.png",
+                "Marsiglia": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Marsiglia.png",
+                "Monaco": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Monaco.png",
+                "Nantes": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Nantes.png",
+                "Nizza": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Nizza.png",
+                "PSG": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/PSG.png",
+                "Rennes": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Rennes.png",
+                "Strasburgo": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Strasburgo.png",
+                "Tolosa": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/ligue_1/Tolosa.png"
+            },
+            "liga": {
+                "Alavés": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Alav%C3%A9s.png",
+                "Athletic_Bilbao": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Athletic_Bilbao.png",
+                "Atlético_Madrid": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Atl%C3%A9tico_Madrid.png",
+                "Barcellona": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Barcellona.png",
+                "Celta_Vigo": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Celta_Vigo.png",
+                "Espanyol": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Espanyol.png",
+                "Getafe": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Getafe.png",
+                "Osasuna": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Osasuna.png",
+                "Rayo_Vallecano": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Rayo_Vallecano.png",
+                "Real_Betis": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Real_Betis.png",
+                "Real_Madrid": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Real_Madrid.png",
+                "Real_Sociedad": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Real_Sociedad.png",
+                "Sevilla": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Sevilla.png",
+                "Valencia": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Valencia.png",
+                "Villarreal": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/liga/Villarreal.png"
+            },
+            "nordici": {
+                "AIK": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/AIK.png",
+                "Bodø-Glimt": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Bod%C3%B8-Glimt.png",
+                "Brann": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Brann.png",
+                "Djurgården": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Djurg%C3%A5rden.png",
+                "Elfsborg": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Elfsborg.png",
+                "HJK": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/HJK.png",
+                "Hammarby": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Hammarby.png",
+                "IFK_Göteborg": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/IFK_G%C3%B6teborg.png",
+                "KuPS": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/KuPS.png",
+                "Malmö": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Malm%C3%B6.png",
+                "Molde": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Molde.png",
+                "Rosenborg": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Rosenborg.png",
+                "SJK": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/SJK.png",
+                "Viking": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/nordici/Viking.png"
+            },
+            "asia": {
+                "Cerezo_Osaka": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Cerezo_Osaka.png",
+                "FC_Seoul": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/FC_Seoul.png",
+                "Gamba_Osaka": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Gamba_Osaka.png",
+                "Kashima": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Kashima.png",
+                "Kawasaki": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Kawasaki.png",
+                "Nagoya": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Nagoya.png",
+                "Sanfrecce": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Sanfrecce.png",
+                "Urawa_Reds": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Urawa_Reds.png",
+                "Vissel_Kobe": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Vissel_Kobe.png",
+                "Yokohama_FM": "https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/asia/Yokohama_FM.png"
+            }
+        };
+
+        // Funzione per ottenere il logo
+        function getTeamLogo(teamName, leagueId) {
+            if (logoDatabase[leagueId] && logoDatabase[leagueId][teamName]) {
+                return logoDatabase[leagueId][teamName];
+            }
+            // Cerca in tutti i campionati
+            for (const league in logoDatabase) {
+                if (logoDatabase[league][teamName]) {
+                    return logoDatabase[league][teamName];
+                }
+            }
+            return null;
+        }
 
         // Stato
         let selectedLeagueId = 'serie_a';
@@ -420,6 +597,38 @@
                 homeSelect.innerHTML += `<option value="${t}">${displayName}</option>`;
                 awaySelect.innerHTML += `<option value="${t}">${displayName}</option>`;
             });
+        }
+
+        // -------------------- METEO --------------------
+        async function getWeather(teamName, nation) {
+            try {
+                let coords = getTeamCoordinates(teamName);
+                if (!coords) {
+                    const capital = getCapital(nation);
+                    coords = capital;
+                }
+                
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&timezone=auto&forecast_days=1`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Errore Open-Meteo');
+                const data = await response.json();
+                if (data.current_weather) {
+                    const temp = data.current_weather.temperature;
+                    const code = data.current_weather.weathercode;
+                    let icon = '⛅';
+                    if (code === 0) icon = '☀️';
+                    else if (code === 1 || code === 2) icon = '⛅';
+                    else if (code === 3) icon = '☁️';
+                    else if (code >= 51 && code <= 67) icon = '🌧️';
+                    else if (code >= 71 && code <= 77) icon = '❄️';
+                    else if (code >= 80 && code <= 99) icon = '⛈️';
+                    return { icon, temp: Math.round(temp) + '°C', city: coords.city };
+                }
+                return null;
+            } catch (error) {
+                console.error('Errore meteo:', error);
+                return null;
+            }
         }
 
         // Funzioni utility
@@ -551,6 +760,11 @@
                     </div>
                 `;
 
+                // METEO - città della squadra di casa
+                let weatherIcon = '⛅', weatherTemp = '22°C', weatherCity = 'Città';
+                const weatherData = await getWeather(home, currentNation);
+                if (weatherData) { weatherIcon = weatherData.icon; weatherTemp = weatherData.temp; weatherCity = weatherData.city; }
+
                 const stats = await callGroqAPI(home, away, currentLeagueName, currentNation);
                 const now = new Date();
                 const dateStr = now.toLocaleDateString('it-IT');
@@ -561,9 +775,9 @@
                 const homeDots = generateFormDots(stats.homeForm);
                 const awayDots = generateFormDots(stats.awayForm);
                 
-                // LOGHI - presi dal DATABASE
-                const homeLogoUrl = getTeamLogoFromDB(home, selectedLeagueId);
-                const awayLogoUrl = getTeamLogoFromDB(away, selectedLeagueId);
+                // LOGHI - DAL DATABASE
+                const homeLogoUrl = getTeamLogo(home, selectedLeagueId);
+                const awayLogoUrl = getTeamLogo(away, selectedLeagueId);
 
                 const homeStats = generateTeamStats(home, stats.homeForm);
                 const awayStats = generateTeamStats(away, stats.awayForm);
@@ -602,12 +816,15 @@
                         <div class="meta">
                             <span><i class="far fa-calendar-alt"></i> ${dateStr}</span>
                             <span><i class="far fa-clock"></i> ${timeStr}</span>
+                            <span class="weather-info">
+                                <i class="fas fa-cloud-sun"></i> ${weatherIcon} ${weatherTemp} (${weatherCity})
+                            </span>
                         </div>
                     </div>
 
                     <div class="matchup">
                         <div class="team-block">
-                            ${homeLogoUrl ? `<img src="${homeLogoUrl}" class="team-logo" alt="${homeDisplay}" onerror="this.style.display='none'; console.error('❌ Logo non caricato:', '${homeLogoUrl}');" />` : ''}
+                            ${homeLogoUrl ? `<img src="${homeLogoUrl}" class="team-logo" alt="${homeDisplay}" onerror="this.style.display='none'; console.error('❌ Logo non trovato:', '${homeLogoUrl}');" />` : ''}
                             <div class="team-name team-name-home">${homeDisplay}</div>
                             <div class="form-dots">
                                 ${homeDots.map(d => `<span class="dot ${dotClass[d]}">${dotLabel[d]}</span>`).join('')}
@@ -617,7 +834,7 @@
                             <div class="vs-symbol">🆚</div>
                         </div>
                         <div class="team-block">
-                            ${awayLogoUrl ? `<img src="${awayLogoUrl}" class="team-logo" alt="${awayDisplay}" onerror="this.style.display='none'; console.error('❌ Logo non caricato:', '${awayLogoUrl}');" />` : ''}
+                            ${awayLogoUrl ? `<img src="${awayLogoUrl}" class="team-logo" alt="${awayDisplay}" onerror="this.style.display='none'; console.error('❌ Logo non trovato:', '${awayLogoUrl}');" />` : ''}
                             <div class="team-name team-name-away">${awayDisplay}</div>
                             <div class="form-dots">
                                 ${awayDots.map(d => `<span class="dot ${dotClass[d]}">${dotLabel[d]}</span>`).join('')}
@@ -718,29 +935,6 @@
             }
         }
 
-        // MAIN - Carica il database e poi avvia l'app
-        async function initApp() {
-            // Mostra loading
-            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Caricamento loghi...</div>';
-            
-            // Carica il database dei loghi
-            const loaded = await loadLogoDatabase();
-            
-            if (loaded) {
-                console.log('✅ Database loghi caricato!');
-                renderLeagues();
-                populateTeams(selectedLeagueId);
-            } else {
-                console.warn('⚠️ Database loghi non caricato, uso fallback');
-                renderLeagues();
-                populateTeams(selectedLeagueId);
-            }
-            
-            console.log('⚽ Analyst Pro v5.0 - CON DATABASE LOGHI!');
-            console.log(`📊 ${Object.values(teamsDB).reduce((acc, arr) => acc + arr.length, 0)} squadre totali`);
-            console.log('✅ I loghi vengono dal database logos.json su GitHub!');
-        }
-
         confirmBtn.addEventListener('click', function(){
             const home = homeSelect.value;
             const away = awaySelect.value;
@@ -749,8 +943,13 @@
             performAnalysis(home, away);
         });
 
-        // Avvia l'app
-        initApp();
+        renderLeagues();
+        populateTeams(selectedLeagueId);
+        console.log('⚽ Analyst Pro v5.0 - CON LOGHI E METEO!');
+        console.log(`📊 ${Object.values(teamsDB).reduce((acc, arr) => acc + arr.length, 0)} squadre totali`);
+        console.log('✅ I loghi sono nel database interno del codice');
+        console.log('🌤️ Meteo sulla città della squadra di casa');
+        console.log('📱 Doppio click sulla card per uscire');
     })();
 </script>
 </body>
