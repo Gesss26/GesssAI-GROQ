@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Loghi</title>
+    <style>
+        body { background: #0b1120; color: white; padding: 20px; font-family: Arial; }
+        .test-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+        .team-card { background: #1a2332; border-radius: 12px; padding: 20px; text-align: center; }
+        .team-card img { width: 80px; height: 80px; object-fit: contain; }
+        .team-card .name { margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 TEST LOGHI - Da GitHub</h1>
+    <p style="color: #94a3b8;">Verifica se i loghi vengono caricati correttamente</p>
+    
+    <div class="test-grid" id="testGrid">
+        <!-- I loghi verranno inseriti qui -->
+    </div>
+
+    <script>
+        // LISTA DELLE SQUADRE DA TESTARE
+        const testTeams = [
+            { name: 'Inter', folder: 'serie_a' },
+            { name: 'Milan', folder: 'serie_a' },
+            { name: 'Juventus', folder: 'serie_a' },
+            { name: 'Arsenal', folder: 'premier_league' },
+            { name: 'Manchester_City', folder: 'premier_league' },
+            { name: 'Bayern', folder: 'bundesliga' },
+            { name: 'PSG', folder: 'ligue_1' },
+            { name: 'Real_Madrid', folder: 'liga' },
+            { name: 'Malmö', folder: 'nordici' },
+            { name: 'FC_Seoul', folder: 'asia' }
+        ];
+
+        const container = document.getElementById('testGrid');
+
+        testTeams.forEach(team => {
+            const card = document.createElement('div');
+            card.className = 'team-card';
+            
+            // URL DEL LOGO
+            const logoUrl = `https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/${team.folder}/${team.name}.png`;
+            
+            // NOME VISUALIZZATO (senza underscore)
+            const displayName = team.name.replace(/_/g, ' ');
+            
+            card.innerHTML = `
+                <img src="${logoUrl}" alt="${displayName}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Crect width=%2280%22 height=%2280%22 fill=%22%232a3a52%22/%3E%3Ctext x=%2240%22 y=%2245%22 text-anchor=%22middle%22 fill=%22%2394a3b8%22 font-size=%2212%22 font-family=%22Arial%22%3E${displayName.substring(0,3)}%3C/text%3E%3C/svg%3E'" />
+                <div class="name">${displayName}</div>
+                <div style="font-size:10px;color:#64748b;margin-top:4px;">📁 ${team.folder}</div>
+                <div style="font-size:9px;color:#475569;word-break:break-all;margin-top:4px;">${logoUrl}</div>
+            `;
+            
+            container.appendChild(card);
+        });
+
+        console.log('✅ Test loghi avviato!');
+        console.log('🔗 Se i loghi non vengono visualizzati, verifica che:');
+        console.log('1. I file PNG esistano nella cartella corretta');
+        console.log('2. I nomi dei file corrispondano ESATTAMENTE (case sensitive)');
+        console.log('3. Il repository sia pubblico');
+    </script>
+</body>
+</html>
