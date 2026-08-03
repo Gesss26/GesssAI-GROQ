@@ -52,8 +52,7 @@
         .analysis-header .meta i { margin-right: 4px; }
         .analysis-header .weather-info { background: #1a2332; padding: 4px 12px; border-radius: 30px; display: flex; align-items: center; gap: 6px; font-size: 12px; }
         .team-colors-fallback { font-size: 32px; letter-spacing: 2px; margin-bottom: 4px; line-height: 1.2; display: block; }
-        .team-logo { width: 64px; height: 64px; object-fit: contain; margin-bottom: 6px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; display: none; }
-        .team-logo.loaded { display: block; }
+        .team-logo { width: 64px; height: 64px; object-fit: contain; margin-bottom: 6px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
         .team-name-home { color: #3b82f6 !important; }
         .team-name-away { color: #f97316 !important; }
         .matchup { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 12px; gap: 10px; }
@@ -236,40 +235,9 @@
             return flags[nation] || null;
         }
 
-        // -------------------- LOGHI - SOLO SE ESISTONO --------------------
+        // -------------------- LOGHI DA GITHUB --------------------
         function getTeamLogo(teamName, leagueId) {
-            // Nomi comuni per i file (se i tuoi file si chiamano diversamente, modifica qui)
-            const commonNames = {
-                'inter': 'fc_internazionale_milano',
-                'milan': 'ac_milan',
-                'juventus': 'juventus',
-                'roma': 'as_roma',
-                'napoli': 'ssc_napoli',
-                'atalanta': 'atalanta_bergamasca_calcio',
-                'fiorentina': 'acf_fiorentina',
-                'lazio': 'ss_lazio',
-                'bologna': 'bologna_fc_1909',
-                'torino': 'torino_fc',
-                'genoa': 'genoa_cfc_1893',
-                'udinese': 'udinese_calcio',
-                'verona': 'hellas_verona',
-                'cagliari': 'cagliari_calcio',
-                'lecce': 'us_lecce_1908',
-                'empoli': 'empoli',
-                'como': 'como_1907',
-                'monza': 'ac_monza_1912',
-                'parma': 'parma_calcio_1913',
-                'venezia': 'venezia_fc',
-                'sassuolo': 'sassuolo'
-            };
-            
-            let cleanName = teamName
-                .toLowerCase()
-                .replace(/\s+/g, '_')
-                .replace(/[^a-z0-9_]/g, '');
-            
-            const fileName = commonNames[cleanName] || cleanName;
-            
+            // Mappatura ID campionato -> nome cartella su GitHub
             const leagueFolder = {
                 'serie_a': 'serie_a',
                 'serie_b': 'serie_b',
@@ -280,13 +248,27 @@
                 'bundesliga': 'bundesliga',
                 'ligue_1': 'ligue_1',
                 'liga': 'liga',
-                'champions_league': 'champions_league',
-                'europa_league': 'europa_league',
-                'conference_league': 'conference_league'
+                'champions_league': 'Coppe',
+                'europa_league': 'Coppe',
+                'conference_league': 'Coppe',
+                'allsvenkan': 'nordici',
+                'eliteserien': 'nordici',
+                'veikkausliiga': 'nordici',
+                'danish': 'nordici',
+                'besta_deild': 'nordici',
+                'j1_league': 'asia',
+                'k_league': 'asia',
+                'csl': 'asia'
             };
             
             const folder = leagueFolder[leagueId];
-            return folder ? `${folder}/${fileName}.png` : null;
+            if (!folder) return null;
+            
+            // Sostituisci gli spazi con underscore per i nomi dei file
+            const fileName = teamName.replace(/ /g, '_');
+            
+            // URL base per i tuoi file su GitHub
+            return `https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/${folder}/${fileName}.png`;
         }
 
         // -------------------- CAMPIONATI --------------------
@@ -305,16 +287,16 @@
             ]},
             { name: '🇪🇺 Europa - Altri Campionati', icon: 'fa-globe-europe', leagues: [
                 { id: 'serie_b', name: 'Serie B', nation: 'Italia' },
-                { id: 'serie_c_a', name: 'Serie C - A', nation: 'Italia' },
-                { id: 'serie_c_b', name: 'Serie C - B', nation: 'Italia' },
-                { id: 'serie_c_c', name: 'Serie C - C', nation: 'Italia' }
+                { id: 'serie_c_a', name: 'Serie C - Girone A', nation: 'Italia' },
+                { id: 'serie_c_b', name: 'Serie C - Girone B', nation: 'Italia' },
+                { id: 'serie_c_c', name: 'Serie C - Girone C', nation: 'Italia' }
             ]},
             { name: '🌍 Europa - Nordici', icon: 'fa-snowflake', leagues: [
                 { id: 'allsvenkan', name: 'Allsvenskan', nation: 'Svezia' },
                 { id: 'eliteserien', name: 'Eliteserien', nation: 'Norvegia' },
                 { id: 'veikkausliiga', name: 'Veikkausliiga', nation: 'Finlandia' },
                 { id: 'danish', name: 'Danish Superliga', nation: 'Danimarca' },
-                { id: 'besta_deild', name: 'Besta deild', nation: 'Islanda' },
+                { id: 'besta_deild', name: 'Besta deild', nation: 'Islanda' }
             ]},
             { name: '🌏 Asia', icon: 'fa-globe-asia', leagues: [
                 { id: 'j1_league', name: 'J1 League', nation: 'Giappone' },
@@ -327,24 +309,24 @@
         const teamsDB = {
             serie_a: ['Atalanta', 'Bologna', 'Cagliari', 'Como', 'Empoli', 'Fiorentina', 'Genoa', 'Inter', 'Juventus', 'Lazio', 'Lecce', 'Milan', 'Monza', 'Napoli', 'Parma', 'Roma', 'Torino', 'Udinese', 'Venezia', 'Verona'],
             serie_b: ['Bari', 'Brescia', 'Carrarese', 'Catanzaro', 'Cesena', 'Cittadella', 'Cosenza', 'Cremonese', 'Frosinone', 'Mantova', 'Modena', 'Palermo', 'Pisa', 'Reggiana', 'Salernitana', 'Sampdoria', 'Sassuolo', 'Spezia', 'Südtirol', 'Juve Stabia'],
-            serie_c_a: ['AlbinoLeffe', 'Arzignano', 'Atalanta U23', 'Caldiero', 'Clodiense', 'FeralpiSalò', 'Giana Erminio', 'Lumezzane', 'Novara', 'Padova', 'Pergolettese', 'Pro Patria', 'Pro Vercelli', 'Renate', 'Trento', 'Triestina', 'Vicenza', 'Virtus Verona'],
-            serie_c_b: ['Arezzo', 'Ascoli', 'Campobasso', 'Carpi', 'Gubbio', 'Legnago', 'Lucchese', 'Milan Futuro', 'Perugia', 'Pescara', 'Pianese', 'Pineto', 'Pontedera', 'Rimini', 'Sestri Levante', 'SPAL', 'Ternana', 'Vis Pesaro', 'Virtus Entella'],
-            serie_c_c: ['Audace Cerignola', 'Avellino', 'Benevento', 'Casertana', 'Catania', 'Cavese', 'Crotone', 'Foggia', 'Giugliano', 'Latina', 'Messina', 'Monopoli', 'Picerno', 'Potenza', 'Sorrento', 'Taranto', 'Team Altamura', 'Trapani', 'Turris'],
-            premier_league: ['Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Chelsea', 'Crystal Palace', 'Coventry','Everton', 'Fulham', 'Hull City', 'Ipswich', 'Leeds United', 'Liverpool', 'Manchester City', 'Manchester United', 'Newcastle', 'Nottingham', 'Sunderland', 'Tottenham'], 
-            bundesliga: ['Augsburg', 'Bayern', 'Bremen', 'Dortmund', 'Borussia Mönchengladbach', 'Eintracht Frankfurt', 'Elversberg', 'Freiburg', 'Hoffenheim', 'Köln', 'HSV', 'Leipzig', 'Leverkusen', 'Mainz 05', 'Paderbon', 'Schalke', 'Stuttgart', 'Union Berlin'],
-            ligue_1: ['Angers', 'Auxerre', 'Brest', 'Le Havre', 'Le Mans', 'Lens', 'Lille', 'Lione', 'Lorient', 'Marsiglia', 'Monaco', 'Nantes', 'Nizza', 'PSG', 'Rennes', 'Strasburgo', 'Troyes', 'Tolosa'],
-            liga: ['Alavés', 'Athletic Bilbao', 'Atlético Madrid', 'Barcellona', 'Celta Vigo', 'Deportivo', 'Elche', 'Espanyol', 'Getafe', 'Levante', 'Málaga', 'Osasuna', 'Rayo Vallecano', 'Real Betis', 'Real Madrid', 'Real Racing Club', 'Real Sociedad', 'Sevilla', 'Valencia', 'Villarreal'],
-            champions_league: ['Real Madrid', 'Barcellona', 'Bayern', 'PSG', 'Manchester City', 'Liverpool', 'Inter', 'Milan', 'Arsenal', 'Dortmund', 'Leverkusen', 'Atletico Madrid', 'Napoli', 'Benfica', 'Porto', 'Celtic', 'Feyenoord', 'Monaco', 'Galatasaray', 'Roma'],
-            europa_league: ['Ajax', 'Atalanta', 'Sporting', 'Stoccarda', 'Lione', 'Marseille', 'Union Berlin', 'Friburgo', 'Real Sociedad', 'Betis', 'Lazio', 'Fiorentina', 'Braga', 'Olympiacos', 'Fenerbahce', 'Rangers', 'Tottenham', 'Aston Villa', 'Rennes', 'Toulouse'],
-            conference_league: ['Fiorentina', 'West Ham', 'Genk', 'AZ Alkmaar', 'Bodo/Glimt', 'Basilea', 'Slavia Praga', 'Partizan', 'Maccabi Tel Aviv', 'PAOK', 'Siviglia', 'Villareal', 'Osasuna', 'Crystal Palace', 'Werder', 'Vitesse', 'Rapid Vienna', 'Cluj'],
-            allsvenkan: ['AIK', 'Degerfors', 'Djurgården', 'Elfsborg', 'GAIS', 'Häcken', 'Halmstad', 'Hammarby', 'IF Brommapojkarna', 'IFK Göteborg', 'Kalmar', 'Malmö', 'Mjällby', 'Örgryte', 'Sirius', 'Västerås'],
-            eliteserien: ['Aalesund', 'Bodø-Glimt', 'Brann', 'Fredrikstad', 'HamKam', 'IK Start', 'KFUM Oslo', 'Kristiansund', 'Lillestrøm', 'Molde', 'Rosenborg', 'Sandefjord', 'Sarpsborg', 'Tromsø', 'Vålerenga', 'Viking'],
-            veikkausliiga: ['Gnistan', 'HJK', 'Ilves', 'Inter Turku', 'Jaro', 'KuPS', 'Lahti', 'Mariehamn', 'Oulu', 'SJK', 'TPS', 'VPS', ],
-            danish: ['AGF', 'Brøndby', 'FC København', 'FC Nordsjælland', 'Horsens', 'Lyngby', 'Midtjylland', 'OB', 'Odense', 'Randers', 'Silkeborg', 'Viborg'],
-            besta_deild: ['Breiðablik', 'Fram', 'Hafnarfjörður', 'ÍA', 'KA Akureyri', 'Keflavík', 'KR Reykjavík', 'Stjarnan', 'Þór A', 'Valur', 'Vestmannaeyjar', 'Víkingur'],
-            j1_league: ['Cerezo Osaka', 'Chiba', 'Fukuoka', 'Gamba Osaka', 'Kashima', 'Kashiwa', 'Kawasaki', 'Kyoto Sanga', 'Machida Z', 'Mito Hollyhock', 'Nagasaki', 'Nagoya', 'Okayama', 'Sanfrecce', 'Sagan Tosu', 'Shimizu', 'Tokyo', 'Tokyo Verdy', 'Urawa Reds', 'Vissel Kobe', 'Yokohama FM'],
-            k_league: ['Bucheon', 'Daejeon', 'FC Anyang', 'Fc Seoul', 'Gangwon', 'Gimcheon', 'Gwangju', 'Incheon Utd', 'Jeju', 'Jeonbuk', 'Pohang Steelers', 'Ulsan'],
-            csl: ['Chengdu', 'Dalian Yingbo', 'Guoan', 'Hainiu', 'Henan', 'Jinmen Tiger', 'Port', 'Qingdao','Shenhua', 'Shenzhen', 'Taishan', 'Three Towns', 'Tieren', 'Tongliang Long', 'Yukun', 'Zhejiang'],
+            serie_c_a: ['AlbinoLeffe', 'Arzignano', 'Atalanta_U23', 'Caldiero', 'Clodiense', 'FeralpiSalò', 'Giana_Erminio', 'Lumezzane', 'Novara', 'Padova', 'Pergolettese', 'Pro_Patria', 'Pro_Vercelli', 'Renate', 'Trento', 'Triestina', 'Vicenza', 'Virtus_Verona'],
+            serie_c_b: ['Arezzo', 'Ascoli', 'Campobasso', 'Carpi', 'Gubbio', 'Legnago', 'Lucchese', 'Milan_Futuro', 'Perugia', 'Pescara', 'Pianese', 'Pineto', 'Pontedera', 'Rimini', 'Sestri_Levante', 'SPAL', 'Ternana', 'Vis_Pesaro', 'Virtus_Entella'],
+            serie_c_c: ['Audace_Cerignola', 'Avellino', 'Benevento', 'Casertana', 'Catania', 'Cavese', 'Crotone', 'Foggia', 'Giugliano', 'Latina', 'Messina', 'Monopoli', 'Picerno', 'Potenza', 'Sorrento', 'Taranto', 'Team_Altamura', 'Trapani', 'Turris'],
+            premier_league: ['Arsenal', 'Aston_Villa', 'Bournemouth', 'Brentford', 'Brighton', 'Chelsea', 'Crystal_Palace', 'Everton', 'Fulham', 'Ipswich', 'Leeds_United', 'Liverpool', 'Manchester_City', 'Manchester_United', 'Newcastle', 'Nottingham', 'Tottenham'],
+            bundesliga: ['Augsburg', 'Bayern', 'Bremen', 'Dortmund', 'Borussia_Mönchengladbach', 'Eintracht_Frankfurt', 'Freiburg', 'Hoffenheim', 'Köln', 'HSV', 'Leipzig', 'Leverkusen', 'Mainz_05', 'Stuttgart', 'Union_Berlin'],
+            ligue_1: ['Angers', 'Auxerre', 'Brest', 'Le_Havre', 'Lens', 'Lille', 'Lione', 'Marsiglia', 'Monaco', 'Nantes', 'Nizza', 'PSG', 'Rennes', 'Strasburgo', 'Tolosa'],
+            liga: ['Alavés', 'Athletic_Bilbao', 'Atlético_Madrid', 'Barcellona', 'Celta_Vigo', 'Espanyol', 'Getafe', 'Osasuna', 'Rayo_Vallecano', 'Real_Betis', 'Real_Madrid', 'Real_Sociedad', 'Sevilla', 'Valencia', 'Villarreal'],
+            champions_league: ['Arsenal', 'Atletico_Madrid', 'Barcellona', 'Bayern', 'Benfica', 'Celtic', 'Dortmund', 'Feyenoord', 'Galatasaray', 'Inter', 'Leverkusen', 'Liverpool', 'Manchester_City', 'Milan', 'Monaco', 'Napoli', 'Porto', 'PSG', 'Real_Madrid', 'Roma'],
+            europa_league: ['Ajax', 'Aston_Villa', 'Atalanta', 'Betis', 'Braga', 'Fiorentina', 'Friburgo', 'Lazio', 'Lione', 'Marsiglia', 'Olympiacos', 'Rangers', 'Real_Sociedad', 'Rennes', 'Sporting', 'Stoccarda', 'Tottenham', 'Toulouse', 'Union_Berlin'],
+            conference_league: ['AZ_Alkmaar', 'Basilea', 'Bodo/Glimt', 'Cluj', 'Crystal_Palace', 'Fiorentina', 'Genk', 'Maccabi_Tel_Aviv', 'Osasuna', 'PAOK', 'Partizan', 'Rapid_Vienna', 'Siviglia', 'Slavia_Praga', 'Villareal', 'Werder', 'West_Ham'],
+            allsvenkan: ['AIK', 'Degerfors', 'Djurgården', 'Elfsborg', 'GAIS', 'Häcken', 'Halmstad', 'Hammarby', 'IF_Brommapojkarna', 'IFK_Göteborg', 'Kalmar', 'Malmö', 'Mjällby', 'Sirius', 'Västerås'],
+            eliteserien: ['Bodø-Glimt', 'Brann', 'Fredrikstad', 'HamKam', 'KFUM_Oslo', 'Kristiansund', 'Lillestrøm', 'Molde', 'Rosenborg', 'Sandefjord', 'Sarpsborg', 'Tromsø', 'Vålerenga', 'Viking'],
+            veikkausliiga: ['Gnistan', 'HJK', 'Ilves', 'Inter_Turku', 'Jaro', 'KuPS', 'Lahti', 'Mariehamn', 'Oulu', 'SJK', 'TPS', 'VPS'],
+            danish: ['AGF', 'Brøndby', 'FC_København', 'FC_Nordsjælland', 'Lyngby', 'Midtjylland', 'OB', 'Randers', 'Silkeborg', 'Viborg'],
+            besta_deild: ['Breiðablik', 'Fram', 'Hafnarfjörður', 'ÍA', 'KA_Akureyri', 'Keflavík', 'KR_Reykjavík', 'Stjarnan', 'Valur', 'Víkingur'],
+            j1_league: ['Cerezo_Osaka', 'Fukuoka', 'Gamba_Osaka', 'Kashima', 'Kashiwa', 'Kawasaki', 'Kyoto_Sanga', 'Machida_Z', 'Nagoya', 'Sanfrecce', 'Sagan_Tosu', 'Shimizu', 'Tokyo', 'Tokyo_Verdy', 'Urawa_Reds', 'Vissel_Kobe', 'Yokohama_FM'],
+            k_league: ['Daejeon', 'FC_Seoul', 'Gangwon', 'Gimcheon', 'Gwangju', 'Incheon_Utd', 'Jeju', 'Jeonbuk', 'Pohang_Steelers', 'Ulsan'],
+            csl: ['Chengdu', 'Guoan', 'Henan', 'Jinmen_Tiger', 'Port', 'Shenhua', 'Shenzhen', 'Taishan', 'Three_Towns', 'Zhejiang']
         };
 
         // Colori delle squadre (fallback principale)
@@ -354,23 +336,25 @@
             'Genoa': '🔴🔵', 'Udinese': '⚫⚪', 'Verona': '🟡🔵', 'Lecce': '🟡🔴', 'Cagliari': '🔴🔵',
             'Como': '🔵⚪', 'Empoli': '🔵⚪', 'Monza': '🔴⚪', 'Parma': '🟡🔵', 'Venezia': '🟢⚫',
             'Arsenal': '🔴⚪', 'Chelsea': '🔵', 'Liverpool': '🔴', 'Manchester City': '🔵', 'Manchester United': '🔴⚫',
-            'Tottenham': '⚪', 'Newcastle': '⬛⬜', 'Aston Villa': '🔵🔴', 'West Ham': '🔵🔴', 'Crystal Palace': '🔴🔵',
-            'Everton': '🔵', 'Fulham': '⚪⚫', 'Brighton': '🔵⚪', 'Wolves': '🟠⚫', 'Brentford': '🔴⚪',
-            'Leicester': '🔵', 'Southampton': '🔴⚪', 'Bournemouth': '🔴⚫', 'Nottingham': '🔴⚪', 'Ipswich': '🔵⚪',
-            'Real Madrid': '⚪', 'Barcellona': '🔴🔵', 'Atletico Madrid': '🔴⚪', 'Siviglia': '🔴⚪', 'Villareal': '🟡',
+            'Tottenham': '⚪', 'Newcastle': '⬛⬜', 'Aston Villa': '🔵🔴', 'Crystal Palace': '🔴🔵',
+            'Everton': '🔵', 'Fulham': '⚪⚫', 'Brighton': '🔵⚪', 'Brentford': '🔴⚪',
+            'Nottingham': '🔴⚪', 'Ipswich': '🔵⚪', 'Bournemouth': '🔴⚫', 'Leeds United': '🔵⚪',
+            'Real Madrid': '⚪', 'Barcellona': '🔴🔵', 'Atletico Madrid': '🔴⚪', 'Siviglia': '🔴⚪', 'Villarreal': '🟡',
             'Real Sociedad': '🔵⚪', 'Betis': '🟢⚪', 'Athletic Bilbao': '🔴⚪', 'Valencia': '⚫🟠', 'Getafe': '🔵🔴',
-            'Osasuna': '🔴', 'Rayo Vallecano': '⚪🔴', 'Mallorca': '🔴⚫', 'Celta Vigo': '🔵⚪', 'Alaves': '🔴🔵',
-            'Las Palmas': '🟡🔵', 'Granada': '🔴⚪', 'Cadiz': '🟡🔵', 'Almeria': '🔴⚪', 'Girona': '🔴⚪',
+            'Osasuna': '🔴', 'Rayo Vallecano': '⚪🔴', 'Celta Vigo': '🔵⚪', 'Alaves': '🔴🔵', 'Espanyol': '🔴⚪',
             'Bayern': '🔴🔵', 'Dortmund': '🟡⚫', 'RB Leipzig': '🔴⚪', 'Leverkusen': '🔴⚫', 'Stuttgart': '⚪🔴',
-            'Eintracht Frankfurt': '⚫⚪🔴', 'Freiburg': '⚫⚪', 'Augsburg': '🔴⚪', 'Wolfsburg': '🟢⚪', 'Union Berlin': '🔴⚪',
-            'Mainz': '🔴⚪', 'Werder Bremen': '🟢⚪', 'Hoffenheim': '🔵⚪', 'Borussia Mönchengladbach': '⚪⚫', 'St. Pauli': '⚪🔴',
-            'Heidenheim': '🔴🔵', 'Bochum': '🔵⚪', 'Kiel': '🔴🔵',
-            'PSG': '🔵🔴', 'Marsiglia': '🔵⚪', 'Lione': '🔴🔵', 'Monaco': '🔴⚪', 'Nizza': '🔴⚫',
-            'Lilla': '🔴⚪', 'Rennes': '⚫⚪', 'Strasburgo': '🔵⚪', 'Lens': '🟡🔴', 'Tolosa': '🟣⚪',
-            'Reims': '🔴⚪', 'Brest': '🔴⚪', 'Montpellier': '🔵🟠', 'Angers': '⚫⚪', 'Nantes': '🟡🟢',
-            'Auxerre': '⚪🔵', 'Le Havre': '🔵⚪', 'Saint-Étienne': '🟢⚪',
+            'Eintracht Frankfurt': '⚫⚪🔴', 'Freiburg': '⚫⚪', 'Augsburg': '🔴⚪', 'Union Berlin': '🔴⚪',
+            'Mainz 05': '🔴⚪', 'Bremen': '🟢⚪', 'Hoffenheim': '🔵⚪', 'Borussia Mönchengladbach': '⚪⚫', 'Köln': '🔴⚪',
+            'HSV': '🔵⚪', 'PSG': '🔵🔴', 'Marsiglia': '🔵⚪', 'Lione': '🔴🔵', 'Monaco': '🔴⚪', 'Nizza': '🔴⚫',
+            'Lille': '🔴⚪', 'Rennes': '⚫⚪', 'Strasburgo': '🔵⚪', 'Lens': '🟡🔴', 'Tolosa': '🟣⚪',
+            'Brest': '🔴⚪', 'Angers': '⚫⚪', 'Nantes': '🟡🟢', 'Auxerre': '⚪🔵', 'Le Havre': '🔵⚪',
             'Benfica': '🔴⚪', 'Porto': '🔵⚪', 'Sporting': '🟢⚪', 'Braga': '🔴⚪',
-            'Ajax': '🔴⚪', 'PSV': '🔴⚪', 'Feyenoord': '🔴⚪', 'AZ Alkmaar': '🔴⚪', 'Twente': '🔴⚪', 'Utrecht': '🔴⚪'
+            'Ajax': '🔴⚪', 'Feyenoord': '🔴⚪', 'AZ Alkmaar': '🔴⚪', 'Celtic': '🟢⚪',
+            'Galatasaray': '🟡🔴', 'Olympiacos': '🔴⚪', 'Rangers': '🔵🔴', 'Fenerbahce': '🟡🔵',
+            'AIK': '⚫⚪', 'Djurgården': '🔵🔴', 'Hammarby': '🟢⚪', 'Malmö': '🔵⚪', 'IFK Göteborg': '🔵⚪',
+            'Bodø-Glimt': '🟡⚫', 'Brann': '🔴⚪', 'Molde': '🔵⚪', 'Rosenborg': '⚫⚪', 'Viking': '⚫⚪',
+            'HJK': '🔵⚪', 'KuPS': '🟡⚫', 'SJK': '⚫⚪', 'FC København': '🔵⚪', 'Brøndby': '🟡🔵',
+            'Midtjylland': '🔴⚫', 'AGF': '⚪🔵', 'Valur': '🔴⚪', 'Víkingur': '🔴⚫', 'KR Reykjavík': '⚫⚪'
         };
         function getTeamColors(team) { return teamColors[team] || '🏳️'; }
 
@@ -521,8 +505,9 @@
             homeSelect.innerHTML = '<option value="">— Casa —</option>';
             awaySelect.innerHTML = '<option value="">— Ospiti —</option>';
             teams.sort().forEach(t => {
-                homeSelect.innerHTML += `<option value="${t}">${t}</option>`;
-                awaySelect.innerHTML += `<option value="${t}">${t}</option>`;
+                const displayName = t.replace(/_/g, ' ');
+                homeSelect.innerHTML += `<option value="${displayName}">${displayName}</option>`;
+                awaySelect.innerHTML += `<option value="${displayName}">${displayName}</option>`;
             });
         }
 
@@ -630,6 +615,8 @@
                 const awayDots = generateFormDots(stats.awayForm);
                 const homeColors = getTeamColors(home);
                 const awayColors = getTeamColors(away);
+                
+                // Carica i loghi da GitHub
                 const homeLogo = getTeamLogo(home, selectedLeagueId);
                 const awayLogo = getTeamLogo(away, selectedLeagueId);
 
@@ -658,7 +645,7 @@
 
                     <div class="matchup">
                         <div class="team-block">
-                            ${homeLogo ? `<img src="${homeLogo}" class="team-logo" alt="${home}" onerror="this.style.display='none';" style="display:block;" />` : ''}
+                            ${homeLogo ? `<img src="${homeLogo}" class="team-logo" alt="${home}" onerror="this.style.display='none';" />` : ''}
                             <div class="team-colors-fallback">${homeColors}</div>
                             <div class="team-name team-name-home">${home}</div>
                             <div class="form-dots">
@@ -669,7 +656,7 @@
                             <div class="vs-symbol">🆚</div>
                         </div>
                         <div class="team-block">
-                            ${awayLogo ? `<img src="${awayLogo}" class="team-logo" alt="${away}" onerror="this.style.display='none';" style="display:block;" />` : ''}
+                            ${awayLogo ? `<img src="${awayLogo}" class="team-logo" alt="${away}" onerror="this.style.display='none';" />` : ''}
                             <div class="team-colors-fallback">${awayColors}</div>
                             <div class="team-name team-name-away">${away}</div>
                             <div class="form-dots">
@@ -756,7 +743,7 @@
         console.log('⚽ Analyst Pro v5.0 - FINALE');
         console.log(`📊 ${Object.values(teamsDB).reduce((acc, arr) => acc + arr.length, 0)} squadre totali`);
         console.log('🏴 Bandiere da Icons8');
-        console.log('🎨 Colori come elemento principale, loghi come optional');
+        console.log('🎨 Loghi da GitHub: /serie_a/, /premier_league/, /Coppe/, /nordici/, /asia/');
         console.log('📱 Doppio click sulla card per uscire');
     })();
 </script>
