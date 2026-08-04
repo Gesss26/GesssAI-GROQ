@@ -52,37 +52,14 @@
         .analysis-header .meta i { margin-right: 4px; }
         .analysis-header .weather-info { background: #1a2332; padding: 4px 12px; border-radius: 30px; display: flex; align-items: center; gap: 6px; font-size: 12px; }
         
-        /* LOGHI - STILE CORRETTO CON POSIZIONE SOPRA */
-        .team-block {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            min-width: 80px;
-        }
+        /* LOGHI */
+        .team-block { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 80px; }
         .team-logo-container {
-            width: 70px;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 6px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 4px;
-            min-height: 70px;
+            width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 6px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; min-height: 70px;
         }
-        .team-logo {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-        .team-logo-placeholder {
-            font-size: 32px;
-            color: #475569;
-        }
+        .team-logo { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .team-logo-placeholder { font-size: 32px; color: #475569; }
         
         .team-name-home { color: #3b82f6 !important; }
         .team-name-away { color: #f97316 !important; }
@@ -402,41 +379,34 @@
             csl: ['Chengdu', 'Guoan', 'Henan', 'Jinmen_Tiger', 'Port', 'Shenhua', 'Shenzhen', 'Taishan', 'Three_Towns', 'Zhejiang']
         };
 
-        // -------------------- DATABASE LOGHI CON PROXY --------------------
-        // Usiamo un proxy per caricare le immagini da GitHub
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-        // Oppure usa: https://corsproxy.io/?
-        
+        // -------------------- DATABASE LOGHI LOCALE --------------------
         function getTeamLogoUrl(teamName, leagueId) {
-            // Mappatura campionato -> cartella
+            // Mappatura esatta tra ID interno e nome cartella su GitHub
             const folderMap = {
-                'serie_a': 'serie_a',
-                'serie_b': 'serie_b',
-                'serie_c_a': 'serie_c_a',
-                'serie_c_b': 'serie_c_b',
-                'serie_c_c': 'serie_c_c',
-                'premier_league': 'premier_league',
-                'bundesliga': 'bundesliga',
-                'ligue_1': 'ligue_1',
-                'liga': 'liga',
-                'allsvenkan': 'nordici',
-                'eliteserien': 'nordici',
-                'veikkausliiga': 'nordici',
-                'danish': 'nordici',
-                'besta_deild': 'nordici',
-                'j1_league': 'asia',
-                'k_league': 'asia',
-                'csl': 'asia'
+                'serie_a': 'Serie A',
+                'serie_b': 'Serie B',
+                'serie_c_a': 'Serie C - Girone A',
+                'serie_c_b': 'Serie C - Girone B',
+                'serie_c_c': 'Serie C - Girone C',
+                'premier_league': 'Premier League',
+                'bundesliga': 'Bundesliga',
+                'ligue_1': 'Ligue 1',
+                'liga': 'La Liga',
+                'allsvenkan': 'Allsvenskan',
+                'eliteserien': 'Eliteserien',
+                'veikkausliiga': 'Veikkausliiga',
+                'danish': 'Danish Superliga',
+                'besta_deild': 'Besta deild',
+                'j1_league': 'J1 League',
+                'k_league': 'K-League 1',
+                'csl': 'Chinese Super League'
             };
             
             const folder = folderMap[leagueId];
-            if (!folder) return null;
+            if (!folder || !teamName) return null;
             
-            // Costruisci l'URL diretto di GitHub
-            const rawUrl = `https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/${folder}/${teamName}.png`;
-            
-            // Usa il proxy per caricare l'immagine
-            return `${PROXY_URL}${encodeURIComponent(rawUrl)}`;
+            // Percorso relativo diretto (niente proxy!)
+            return `./loghi/${folder}/${teamName}.png`;
         }
 
         // Stato
@@ -696,7 +666,7 @@
                 const homeDots = generateFormDots(stats.homeForm);
                 const awayDots = generateFormDots(stats.awayForm);
                 
-                // LOGHI - CON PROXY
+                // LOGHI LOCALI
                 const homeLogoUrl = getTeamLogoUrl(home, selectedLeagueId);
                 const awayLogoUrl = getTeamLogoUrl(away, selectedLeagueId);
 
@@ -731,7 +701,7 @@
                     `;
                 }
 
-                // HTML con LOGHI SOPRA I NOMI
+                // HTML con LOGHI E FALLBACK MIGLIORATO
                 analysisContent.innerHTML = `
                     <div class="analysis-header">
                         <div class="league-name">${leagueFlag} ${currentLeagueName}</div>
@@ -746,9 +716,11 @@
 
                     <div class="matchup">
                         <div class="team-block">
-                            <!-- LOGO SOPRA IL NOME -->
                             <div class="team-logo-container">
-                                ${homeLogoUrl ? `<img src="${homeLogoUrl}" class="team-logo" alt="${homeDisplay}" onerror="this.parentElement.innerHTML='<span class=\\'team-logo-placeholder\\'>⚽</span>';" />` : '<span class="team-logo-placeholder">⚽</span>'}
+                                ${homeLogoUrl 
+                                    ? `<img src="${homeLogoUrl}" class="team-logo" alt="${homeDisplay}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                       <span class="team-logo-placeholder" style="display:none;">⚽</span>` 
+                                    : '<span class="team-logo-placeholder">⚽</span>'}
                             </div>
                             <div class="team-name team-name-home">${homeDisplay}</div>
                             <div class="form-dots">
@@ -759,9 +731,11 @@
                             <div class="vs-symbol">🆚</div>
                         </div>
                         <div class="team-block">
-                            <!-- LOGO SOPRA IL NOME -->
                             <div class="team-logo-container">
-                                ${awayLogoUrl ? `<img src="${awayLogoUrl}" class="team-logo" alt="${awayDisplay}" onerror="this.parentElement.innerHTML='<span class=\\'team-logo-placeholder\\'>⚽</span>';" />` : '<span class="team-logo-placeholder">⚽</span>'}
+                                ${awayLogoUrl 
+                                    ? `<img src="${awayLogoUrl}" class="team-logo" alt="${awayDisplay}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                       <span class="team-logo-placeholder" style="display:none;">⚽</span>` 
+                                    : '<span class="team-logo-placeholder">⚽</span>'}
                             </div>
                             <div class="team-name team-name-away">${awayDisplay}</div>
                             <div class="form-dots">
@@ -873,11 +847,7 @@
 
         renderLeagues();
         populateTeams(selectedLeagueId);
-        console.log('⚽ Analyst Pro v5.0 - CON PROXY PER LOGHI!');
-        console.log('🌐 Proxy: api.allorigins.win');
-        console.log('✅ I loghi sono SOPRA i nomi delle squadre');
-        console.log('🌤️ Meteo sulla città della squadra di casa');
-        console.log('📱 Doppio click sulla card per uscire');
+        console.log('⚽ Analyst Pro v5.0 - LOGHI LOCALI ATTIVI!');
     })();
 </script>
 </body>
