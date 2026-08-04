@@ -1,14 +1,27 @@
-Grazie per la precisazione! Ora è tutto chiaro. La struttura non ha una cartella radice `loghi/`, ma le cartelle dei campionati (o nazioni) sono direttamente nella root del repository, e i nomi delle cartelle corrispondono alla **Nazione** (es. "Italia", "Inghilterra") o al nome specifico che hai dato ("Italia A").
+Perfetto! Ora vedo esattamente la struttura delle tue cartelle su GitHub dall'immagine. 
 
-Basandomi sulla tua struttura:
-`GesssAI-Groq/Italia A/Juventus.png`
+Ecco i nomi esatti delle cartelle che hai creato:
+*   `Cina`
+*   `Corea_del_Sud`
+*   `Danimarca`
+*   `Finlandia`
+*   `Francia`
+*   `Germania`
+*   `Giappone`
+*   `Inghilterra`
+*   `Islanda`
+*   `Italia_A`
+*   `Italia_B`
+*   `Italia_C_A`
+*   `Italia_C_B`
+*   `Italia_C_C`
+*   `Norvegia`
+*   `Spagna`
+*   `Svezia`
 
-Ecco il codice **definitivo e corretto**. Ho modificato la funzione `getTeamLogoUrl` per:
-1.  Rimuovere `./loghi/`.
-2.  Usare il nome della **Nazione** (o una mappatura specifica se usi nomi come "Italia A") come nome della cartella.
-3.  Usare l'URL assoluto di GitHub Raw per evitare qualsiasi problema di percorso relativo.
+Ho aggiornato la funzione `getTeamLogoUrl` per mappare **esattamente** questi nomi. 
 
-Copia e incolla questo intero file `index.html`:
+Ecco il codice completo e definitivo. Copialo e incollalo nel tuo `index.html`:
 
 ```html
 <!DOCTYPE html>
@@ -392,16 +405,15 @@ Copia e incolla questo intero file `index.html`:
             csl: ['Chengdu', 'Guoan', 'Henan', 'Jinmen_Tiger', 'Port', 'Shenhua', 'Shenzhen', 'Taishan', 'Three_Towns', 'Zhejiang']
         };
 
-        // -------------------- DATABASE LOGHI (STRUTTURA CORRETTA) --------------------
-        function getTeamLogoUrl(teamName, leagueId, nationName) {
-            // Mappatura specifica se i nomi delle cartelle differiscono dal nome della nazione standard
-            // Es: Per la Serie A hai detto che la cartella è "Italia A"
+        // -------------------- DATABASE LOGHI (MAPPA ESATTA GITHUB) --------------------
+        function getTeamLogoUrl(teamName, leagueId) {
+            // Mappatura ESATTA dei nomi delle cartelle visibili nello screenshot
             const folderMap = {
-                'serie_a': 'Italia A',       // <-- MODIFICATO SECONDO TUE INDICAZIONI
-                'serie_b': 'Italia B',       // Ipotetico, adatta se necessario
-                'serie_c_a': 'Italia C',     // Ipotetico
-                'serie_c_b': 'Italia C',
-                'serie_c_c': 'Italia C',
+                'serie_a': 'Italia_A',
+                'serie_b': 'Italia_B',
+                'serie_c_a': 'Italia_C_A',
+                'serie_c_b': 'Italia_C_B',
+                'serie_c_c': 'Italia_C_C',
                 'premier_league': 'Inghilterra',
                 'bundesliga': 'Germania',
                 'ligue_1': 'Francia',
@@ -412,13 +424,11 @@ Copia e incolla questo intero file `index.html`:
                 'danish': 'Danimarca',
                 'besta_deild': 'Islanda',
                 'j1_league': 'Giappone',
-                'k_league': 'Corea',
+                'k_league': 'Corea_del_Sud',
                 'csl': 'Cina'
             };
             
-            // Usa la mappa se esiste, altrimenti usa il nome della nazione passato
-            const folder = folderMap[leagueId] || nationName;
-            
+            const folder = folderMap[leagueId];
             if (!folder || !teamName) return null;
             
             // URL ASSOLUTO GITHUB RAW
@@ -426,11 +436,8 @@ Copia e incolla questo intero file `index.html`:
             const repoName = 'GesssAI-Groq';
             const branch = 'main';
             
-            // Codifica spazi e caratteri speciali per l'URL
-            const safeFolder = encodeURIComponent(folder);
-            
-            // Struttura: RepoRoot / NomeCartella / NomeSquadra.png
-            return `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${safeFolder}/${teamName}.png`;
+            // Costruzione URL: https://raw.githubusercontent.com/Gesss26/GesssAI-Groq/main/Italia_A/Juventus.png
+            return `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${folder}/${teamName}.png`;
         }
 
         // Stato
@@ -690,9 +697,9 @@ Copia e incolla questo intero file `index.html`:
                 const homeDots = generateFormDots(stats.homeForm);
                 const awayDots = generateFormDots(stats.awayForm);
                 
-                // LOGHI - PASSIAMO ANCHE LA NAZIONE PER SICUREZZA
-                const homeLogoUrl = getTeamLogoUrl(home, selectedLeagueId, currentNation);
-                const awayLogoUrl = getTeamLogoUrl(away, selectedLeagueId, currentNation);
+                // LOGHI
+                const homeLogoUrl = getTeamLogoUrl(home, selectedLeagueId);
+                const awayLogoUrl = getTeamLogoUrl(away, selectedLeagueId);
 
                 const homeStats = generateTeamStats(home, stats.homeForm);
                 const awayStats = generateTeamStats(away, stats.awayForm);
@@ -871,7 +878,7 @@ Copia e incolla questo intero file `index.html`:
 
         renderLeagues();
         populateTeams(selectedLeagueId);
-        console.log('⚽ Analyst Pro v5.0 - LOGHI DA ROOT REPO!');
+        console.log('⚽ Analyst Pro v5.0 - LOGHI MAPPA GITHUB AGGIORNATA!');
     })();
 </script>
 </body>
