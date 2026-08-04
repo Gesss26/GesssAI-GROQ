@@ -1,3 +1,16 @@
+Grazie per la precisazione! Ora è tutto chiaro. La struttura non ha una cartella radice `loghi/`, ma le cartelle dei campionati (o nazioni) sono direttamente nella root del repository, e i nomi delle cartelle corrispondono alla **Nazione** (es. "Italia", "Inghilterra") o al nome specifico che hai dato ("Italia A").
+
+Basandomi sulla tua struttura:
+`GesssAI-Groq/Italia A/Juventus.png`
+
+Ecco il codice **definitivo e corretto**. Ho modificato la funzione `getTeamLogoUrl` per:
+1.  Rimuovere `./loghi/`.
+2.  Usare il nome della **Nazione** (o una mappatura specifica se usi nomi come "Italia A") come nome della cartella.
+3.  Usare l'URL assoluto di GitHub Raw per evitare qualsiasi problema di percorso relativo.
+
+Copia e incolla questo intero file `index.html`:
+
+```html
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -379,34 +392,45 @@
             csl: ['Chengdu', 'Guoan', 'Henan', 'Jinmen_Tiger', 'Port', 'Shenhua', 'Shenzhen', 'Taishan', 'Three_Towns', 'Zhejiang']
         };
 
-        // -------------------- DATABASE LOGHI LOCALE --------------------
-        function getTeamLogoUrl(teamName, leagueId) {
-            // Mappatura esatta tra ID interno e nome cartella su GitHub
+        // -------------------- DATABASE LOGHI (STRUTTURA CORRETTA) --------------------
+        function getTeamLogoUrl(teamName, leagueId, nationName) {
+            // Mappatura specifica se i nomi delle cartelle differiscono dal nome della nazione standard
+            // Es: Per la Serie A hai detto che la cartella è "Italia A"
             const folderMap = {
-                'serie_a': 'Serie A',
-                'serie_b': 'Serie B',
-                'serie_c_a': 'Serie C - Girone A',
-                'serie_c_b': 'Serie C - Girone B',
-                'serie_c_c': 'Serie C - Girone C',
-                'premier_league': 'Premier League',
-                'bundesliga': 'Bundesliga',
-                'ligue_1': 'Ligue 1',
-                'liga': 'La Liga',
-                'allsvenkan': 'Allsvenskan',
-                'eliteserien': 'Eliteserien',
-                'veikkausliiga': 'Veikkausliiga',
-                'danish': 'Danish Superliga',
-                'besta_deild': 'Besta deild',
-                'j1_league': 'J1 League',
-                'k_league': 'K-League 1',
-                'csl': 'Chinese Super League'
+                'serie_a': 'Italia A',       // <-- MODIFICATO SECONDO TUE INDICAZIONI
+                'serie_b': 'Italia B',       // Ipotetico, adatta se necessario
+                'serie_c_a': 'Italia C',     // Ipotetico
+                'serie_c_b': 'Italia C',
+                'serie_c_c': 'Italia C',
+                'premier_league': 'Inghilterra',
+                'bundesliga': 'Germania',
+                'ligue_1': 'Francia',
+                'liga': 'Spagna',
+                'allsvenkan': 'Svezia',
+                'eliteserien': 'Norvegia',
+                'veikkausliiga': 'Finlandia',
+                'danish': 'Danimarca',
+                'besta_deild': 'Islanda',
+                'j1_league': 'Giappone',
+                'k_league': 'Corea',
+                'csl': 'Cina'
             };
             
-            const folder = folderMap[leagueId];
+            // Usa la mappa se esiste, altrimenti usa il nome della nazione passato
+            const folder = folderMap[leagueId] || nationName;
+            
             if (!folder || !teamName) return null;
             
-            // Percorso relativo diretto (niente proxy!)
-            return `./loghi/${folder}/${teamName}.png`;
+            // URL ASSOLUTO GITHUB RAW
+            const repoOwner = 'Gesss26';
+            const repoName = 'GesssAI-Groq';
+            const branch = 'main';
+            
+            // Codifica spazi e caratteri speciali per l'URL
+            const safeFolder = encodeURIComponent(folder);
+            
+            // Struttura: RepoRoot / NomeCartella / NomeSquadra.png
+            return `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/${safeFolder}/${teamName}.png`;
         }
 
         // Stato
@@ -666,9 +690,9 @@
                 const homeDots = generateFormDots(stats.homeForm);
                 const awayDots = generateFormDots(stats.awayForm);
                 
-                // LOGHI LOCALI
-                const homeLogoUrl = getTeamLogoUrl(home, selectedLeagueId);
-                const awayLogoUrl = getTeamLogoUrl(away, selectedLeagueId);
+                // LOGHI - PASSIAMO ANCHE LA NAZIONE PER SICUREZZA
+                const homeLogoUrl = getTeamLogoUrl(home, selectedLeagueId, currentNation);
+                const awayLogoUrl = getTeamLogoUrl(away, selectedLeagueId, currentNation);
 
                 const homeStats = generateTeamStats(home, stats.homeForm);
                 const awayStats = generateTeamStats(away, stats.awayForm);
@@ -701,7 +725,7 @@
                     `;
                 }
 
-                // HTML con LOGHI E FALLBACK MIGLIORATO
+                // HTML RENDER
                 analysisContent.innerHTML = `
                     <div class="analysis-header">
                         <div class="league-name">${leagueFlag} ${currentLeagueName}</div>
@@ -847,8 +871,9 @@
 
         renderLeagues();
         populateTeams(selectedLeagueId);
-        console.log('⚽ Analyst Pro v5.0 - LOGHI LOCALI ATTIVI!');
+        console.log('⚽ Analyst Pro v5.0 - LOGHI DA ROOT REPO!');
     })();
 </script>
 </body>
 </html>
+```
